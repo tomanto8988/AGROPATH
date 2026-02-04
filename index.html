@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROPATH - Future of Farming</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Reward Animation */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.3s ease-in-out; }
+
+        /* Tree Growth Animation */
+        @keyframes grow {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-grow { animation: grow 1s ease-out; }
+
+        /* Loading Shimmer Effect */
+        .shimmer {
+            background: #f1f5f9;
+            background-image: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 100%; 
+            animation-duration: 1.5s;
+            animation-fill-mode: forwards; 
+            animation-iteration-count: infinite;
+            animation-name: placeholderShimmer;
+            animation-timing-function: linear;
+        }
+        @keyframes placeholderShimmer {
+            0% { background-position: -468px 0; }
+            100% { background-position: 468px 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 h-screen flex overflow-hidden selection:bg-green-100 selection:text-green-800">
+
+    <!-- REWARD TOAST (Hidden by default) -->
+    <div id="reward-toast" class="fixed top-6 right-6 z-[70] bg-white border-2 border-yellow-400 text-slate-800 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 translate-x-full transition-transform duration-500">
+        <div class="bg-yellow-100 p-2 rounded-full text-yellow-600">
+            <i data-lucide="star" size="24" class="fill-yellow-400"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-lg">+50 AgroPoints!</h4>
+            <p class="text-sm text-slate-500">Tree growth progress updated.</p>
+        </div>
+    </div>
+
+    <!-- ONBOARDING OVERLAY -->
+    <div id="onboarding-overlay" class="fixed inset-0 z-[60] bg-slate-900 flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="max-w-5xl w-full bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <!-- Decorative BG -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
+
+            <div class="text-center mb-10 relative z-10">
+                <div class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-sm font-bold mb-4 border border-green-100">
+                    <i data-lucide="sprout" size="16"></i> Welcome to AGROPATH
+                </div>
+                <h1 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">What's your farming experience?</h1>
+                <p class="text-slate-500 text-lg max-w-xl mx-auto">Select your level so we can personalize your dashboard and recommendations.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 relative z-10">
+                <button onclick="selectExperience('beginner')" class="group p-8 rounded-2xl border-2 border-slate-100 hover:border-green-500 hover:bg-green-50/50 transition-all text-left hover:shadow-xl hover:shadow-green-500/10 relative overflow-hidden">
+                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6 text-3xl shadow-sm group-hover:scale-110 transition-transform">🌱</div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Beginner</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">I want to learn how to grow crops from scratch.</p>
+                    <div class="mt-4 flex items-center text-green-700 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        Go to Knowledge Hub <i data-lucide="arrow-right" size="16" class="ml-1"></i>
+                    </div>
+                </button>
+
+                <button onclick="selectExperience('intermediate')" class="group p-8 rounded-2xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50/50 transition-all text-left hover:shadow-xl hover:shadow-blue-500/10 relative overflow-hidden">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 text-3xl shadow-sm group-hover:scale-110 transition-transform">🌿</div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Intermediate</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">I have some experience. Help me optimize my yield.</p>
+                    <div class="mt-4 flex items-center text-blue-700 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        Go to Dashboard <i data-lucide="arrow-right" size="16" class="ml-1"></i>
+                    </div>
+                </button>
+
+                <button onclick="selectExperience('expert')" class="group p-8 rounded-2xl border-2 border-slate-100 hover:border-purple-500 hover:bg-purple-50/50 transition-all text-left hover:shadow-xl hover:shadow-purple-500/10 relative overflow-hidden">
+                    <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6 text-3xl shadow-sm group-hover:scale-110 transition-transform">🚜</div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Expert</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">I need advanced analytics, precision data & market trends.</p>
+                    <div class="mt-4 flex items-center text-purple-700 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        Go to Analytics <i data-lucide="arrow-right" size="16" class="ml-1"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden backdrop-blur-sm lg:hidden transition-opacity"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0 lg:static flex-shrink-0 flex flex-col shadow-xl lg:shadow-none">
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+            <div class="bg-green-600 p-2.5 rounded-xl shadow-lg shadow-green-600/20">
+                <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">AGROPATH</h1>
+                <p class="text-xs text-slate-500 font-medium">Smart Farming</p>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1.5 flex-1 overflow-y-auto custom-scrollbar">
+            <button onclick="switchTab('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-semibold bg-green-50 text-green-700 ring-1 ring-green-600/10" data-tab="dashboard">
+                <i data-lucide="layout-dashboard" size="20"></i> <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('rewards')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="rewards">
+                <i data-lucide="award" size="20"></i> <span>Rewards Zone</span>
+            </button>
+            <button onclick="switchTab('shop')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="shop">
+                <i data-lucide="shopping-bag" size="20"></i> <span>AgroShop</span> <span class="ml-auto text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">New</span>
+            </button>
+            <button onclick="switchTab('ai-chat')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="ai-chat">
+                <i data-lucide="message-square" size="20"></i> <span>AgroGenius AI</span>
+            </button>
+            <button onclick="switchTab('scan')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="scan">
+                <i data-lucide="scan" size="20"></i> <span>Disease Scan</span>
+            </button>
+            <button onclick="switchTab('crop-guide')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="crop-guide">
+                <i data-lucide="sprout" size="20"></i> <span>Crop Guide</span>
+            </button>
+            <button onclick="switchTab('soil')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="soil">
+                <i data-lucide="beaker" size="20"></i> <span>Soil Lab</span>
+            </button>
+            <button onclick="switchTab('weather')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="weather">
+                <i data-lucide="cloud-rain" size="20"></i> <span>Weather</span>
+            </button>
+            <button onclick="switchTab('recommend')" class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900" data-tab="recommend">
+                <i data-lucide="trending-up" size="20"></i> <span>Smart Pick</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100">
+            <div class="bg-yellow-50 rounded-xl p-3 mb-3 border border-yellow-100 flex justify-between items-center cursor-pointer hover:bg-yellow-100 transition-colors" onclick="switchTab('rewards')">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="star" class="text-yellow-500 fill-yellow-500" size="16"></i>
+                    <span class="text-xs font-bold text-yellow-700">AgroPoints</span>
+                </div>
+                <span id="user-points" class="text-sm font-bold text-yellow-800">120</span>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-3 flex items-center gap-3 border border-slate-100">
+                <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">JD</div>
+                <div>
+                    <p class="text-sm font-bold text-slate-900">John Doe</p>
+                    <p class="text-xs text-slate-500">Level <span id="sidebar-level">1</span></p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full relative w-full bg-slate-50">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMobileMenu()" class="lg:hidden p-2 -ml-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
+                    <i data-lucide="menu" size="24"></i>
+                </button>
+                <h2 id="header-title" class="text-lg md:text-xl font-bold text-slate-800">Dashboard</h2>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div onclick="initRealTime()" class="hidden md:flex flex-col items-end cursor-pointer group">
+                    <div class="flex items-center gap-1.5 text-sm font-bold text-slate-700 group-hover:text-green-600 transition-colors">
+                        <i data-lucide="map-pin" size="14" class="text-green-600"></i>
+                        <span id="header-location-text">Locating...</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-medium">Tap to refresh</span>
+                </div>
+                <div class="h-8 w-px bg-slate-200 mx-2 hidden md:block"></div>
+                <button onclick="switchTab('rewards')" class="relative p-2.5 text-slate-500 hover:bg-slate-100 rounded-full transition-all hover:text-slate-900">
+                    <i data-lucide="bell" size="20"></i>
+                    <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Area -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar relative">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-section space-y-6 fade-in">
+                <!-- Welcome Banner -->
+                <div class="relative overflow-hidden bg-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-slate-900/10">
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div>
+                            <h1 id="dashboard-greeting" class="text-2xl md:text-3xl font-bold mb-2">Welcome Back! 🌾</h1>
+                            <p class="text-slate-300 max-w-lg text-sm md:text-base leading-relaxed">
+                                You have <strong><span id="banner-points">120</span> AgroPoints</strong>. Use them to get discounts on fertilizers and tools in the AgroShop.
+                            </p>
+                            <div class="flex flex-wrap gap-3 mt-6">
+                                <button onclick="switchTab('shop')" class="flex items-center gap-2 px-5 py-2.5 bg-yellow-500 text-slate-900 font-bold rounded-full hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/20 text-sm">
+                                    <i data-lucide="shopping-bag" size="16"></i> Visit Shop
+                                </button>
+                                <button onclick="initRealTime()" class="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white font-semibold rounded-full hover:bg-slate-700 transition-all border border-slate-700 text-sm">
+                                    <i data-lucide="refresh-cw" size="16"></i> Refresh Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Decorative Background -->
+                    <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+                        <i data-lucide="sprout" class="w-64 h-64 -mb-12 -mr-12 transform rotate-12"></i>
+                    </div>
+                </div>
+
+                <!-- Weather & Status Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Real-time Status Card -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <span class="bg-green-100 p-1.5 rounded-lg"><i data-lucide="activity" class="text-green-600 w-4 h-4"></i></span> 
+                                Field Conditions
+                            </h3>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-green-50 text-green-700 rounded-full border border-green-100 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Live
+                            </span>
+                        </div>
+                        
+                        <div id="weather-skeleton" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="shimmer h-24 rounded-xl"></div>
+                            <div class="shimmer h-24 rounded-xl"></div>
+                            <div class="shimmer h-24 rounded-xl"></div>
+                            <div class="shimmer h-24 rounded-xl"></div>
+                        </div>
+
+                        <div id="weather-content" class="grid grid-cols-2 sm:grid-cols-4 gap-4 hidden">
+                            <div class="p-4 bg-slate-50 rounded-xl text-center border border-slate-100 hover:border-blue-200 transition-colors">
+                                <i data-lucide="thermometer" class="w-6 h-6 mx-auto text-blue-500 mb-2"></i>
+                                <div id="dash-temp" class="text-2xl font-bold text-slate-800">--</div>
+                                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Temp</div>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl text-center border border-slate-100 hover:border-sky-200 transition-colors">
+                                <i data-lucide="droplets" class="w-6 h-6 mx-auto text-sky-500 mb-2"></i>
+                                <div id="dash-humidity" class="text-2xl font-bold text-slate-800">--</div>
+                                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Humidity</div>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl text-center border border-slate-100 hover:border-gray-200 transition-colors">
+                                <i data-lucide="wind" class="w-6 h-6 mx-auto text-gray-500 mb-2"></i>
+                                <div id="dash-wind" class="text-2xl font-bold text-slate-800">--</div>
+                                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Wind</div>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl text-center border border-slate-100 hover:border-amber-200 transition-colors">
+                                <i data-lucide="sprout" class="w-6 h-6 mx-auto text-amber-500 mb-2"></i>
+                                <div class="text-2xl font-bold text-slate-800">Good</div>
+                                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Soil</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Feed -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                             <span class="bg-amber-100 p-1.5 rounded-lg"><i data-lucide="bell" class="text-amber-600 w-4 h-4"></i></span>
+                             Alerts & Insights
+                        </h3>
+                        <div id="dashboard-alerts-list" class="space-y-3 flex-1 overflow-y-auto max-h-60 pr-1 custom-scrollbar">
+                             <div class="p-4 text-center text-slate-400 text-sm flex flex-col items-center justify-center h-32">
+                                <i data-lucide="loader-2" class="animate-spin mb-2 opacity-50"></i>
+                                <span>Scanning weather data...</span>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simple Quick Actions -->
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-4">Quick Tools</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button onclick="switchTab('scan')" class="group p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-purple-200 transition-all text-left">
+                            <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i data-lucide="scan" size="24"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 block">Scan Disease</span>
+                            <span class="text-xs text-slate-400">Earn +50 Pts</span>
+                        </button>
+                        <button onclick="switchTab('crop-guide')" class="group p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-emerald-200 transition-all text-left">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i data-lucide="book-open" size="24"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 block">Crop Guide</span>
+                            <span class="text-xs text-slate-400">Step-by-step</span>
+                        </button>
+                        <button onclick="switchTab('shop')" class="group p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-yellow-200 transition-all text-left">
+                            <div class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i data-lucide="shopping-bag" size="24"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 block">AgroShop</span>
+                            <span class="text-xs text-slate-400">Use Points</span>
+                        </button>
+                        <button onclick="switchTab('rewards')" class="group p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-orange-200 transition-all text-left">
+                            <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i data-lucide="award" size="24"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 block">Rewards</span>
+                            <span class="text-xs text-slate-400">Grow & Earn</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: REWARDS ZONE (New) -->
+            <div id="view-rewards" class="view-section hidden space-y-6 fade-in">
+                <!-- Tree & Level Card -->
+                <div class="bg-gradient-to-br from-emerald-600 to-teal-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+                    <!-- Decorative patterns -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-12 -mt-12 pointer-events-none"></div>
+                    
+                    <!-- Tree Section -->
+                    <div class="flex flex-col items-center z-10 w-full md:w-1/3">
+                        <div id="tree-container" class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm border-4 border-white/30 shadow-inner">
+                            <i id="tree-icon" data-lucide="sprout" size="64" class="text-white animate-grow"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">Your Farm Tree</h3>
+                        <p class="text-emerald-100 text-sm">Level <span id="tree-level-display">1</span> Sapling</p>
+                    </div>
+
+                    <!-- Progress Section -->
+                    <div class="flex-1 w-full z-10">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <h2 class="text-2xl font-bold">Level <span id="level-display">1</span></h2>
+                                <p class="text-emerald-100 text-sm">Earn 200 points to grow your tree!</p>
+                            </div>
+                            <span class="text-3xl font-bold"><span id="points-progress-text">120</span><span class="text-lg text-emerald-200">/200</span></span>
+                        </div>
+                        <div class="w-full bg-black/20 rounded-full h-4 mb-4 backdrop-blur-sm overflow-hidden">
+                            <div id="points-progress-bar" class="bg-yellow-400 h-4 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]" style="width: 60%"></div>
+                        </div>
+                        <p class="text-xs text-emerald-200 italic"><i data-lucide="info" size="12" class="inline mr-1"></i> Reach Level 2 to unlock "Advanced Crop Analytics"</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <!-- Activities -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <span class="bg-orange-100 p-1.5 rounded-lg"><i data-lucide="zap" class="text-orange-600 w-4 h-4"></i></span>
+                            Earn Points
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-green-100 p-2 rounded-lg text-green-600"><i data-lucide="scan" size="18"></i></div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Scan Crop Health</p>
+                                        <p class="text-xs text-slate-500">Identify diseases</p>
+                                    </div>
+                                </div>
+                                <button onclick="switchTab('scan')" class="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors">+50 Pts</button>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-blue-100 p-2 rounded-lg text-blue-600"><i data-lucide="cloud-rain" size="18"></i></div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Check Weather</p>
+                                        <p class="text-xs text-slate-500">Daily forecast check</p>
+                                    </div>
+                                </div>
+                                <button onclick="initRealTime(); showRewardToast(); userPoints+=10; updatePointsUI();" class="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors">+10 Pts</button>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-purple-100 p-2 rounded-lg text-purple-600"><i data-lucide="book-open" size="18"></i></div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Read a Guide</p>
+                                        <p class="text-xs text-slate-500">Learn cultivation</p>
+                                    </div>
+                                </div>
+                                <button onclick="switchTab('crop-guide')" class="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors">+20 Pts</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard & History -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full">
+                        <div class="flex gap-4 border-b border-slate-100 pb-2 mb-4">
+                            <button onclick="toggleRewardTab('leaderboard')" id="tab-btn-leaderboard" class="text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-2">Leaderboard</button>
+                            <button onclick="toggleRewardTab('history')" id="tab-btn-history" class="text-sm font-bold text-slate-400 hover:text-slate-600 pb-2">History</button>
+                        </div>
+                        
+                        <div id="tab-content-leaderboard" class="space-y-4 overflow-y-auto max-h-60 custom-scrollbar pr-1">
+                            <!-- User Rank -->
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-yellow-700 w-4">4</span>
+                                    <div class="w-8 h-8 bg-green-600 rounded-full text-white flex items-center justify-center text-xs font-bold">JD</div>
+                                    <p class="text-sm font-bold text-slate-900">You</p>
+                                </div>
+                                <span class="text-sm font-bold text-slate-700"><span id="lb-points">120</span> Pts</span>
+                            </div>
+                            <!-- Other Users -->
+                            <div class="flex items-center justify-between p-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-slate-400 w-4">1</span>
+                                    <div class="w-8 h-8 bg-slate-200 rounded-full text-slate-600 flex items-center justify-center text-xs font-bold">AK</div>
+                                    <p class="text-sm font-medium text-slate-600">Arun Kumar</p>
+                                </div>
+                                <span class="text-sm font-bold text-slate-500">850 Pts</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-slate-400 w-4">2</span>
+                                    <div class="w-8 h-8 bg-slate-200 rounded-full text-slate-600 flex items-center justify-center text-xs font-bold">SM</div>
+                                    <p class="text-sm font-medium text-slate-600">Sita Menon</p>
+                                </div>
+                                <span class="text-sm font-bold text-slate-500">720 Pts</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-slate-400 w-4">3</span>
+                                    <div class="w-8 h-8 bg-slate-200 rounded-full text-slate-600 flex items-center justify-center text-xs font-bold">RJ</div>
+                                    <p class="text-sm font-medium text-slate-600">Rahul J.</p>
+                                </div>
+                                <span class="text-sm font-bold text-slate-500">450 Pts</span>
+                            </div>
+                        </div>
+
+                        <div id="tab-content-history" class="hidden space-y-4 overflow-y-auto max-h-60 custom-scrollbar pr-1">
+                            <div class="flex justify-between items-center p-2 border-b border-slate-50">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">Disease Scan</p>
+                                    <p class="text-xs text-slate-400">Today</p>
+                                </div>
+                                <span class="text-green-600 font-bold text-sm">+50</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 border-b border-slate-50">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">Welcome Bonus</p>
+                                    <p class="text-xs text-slate-400">Yesterday</p>
+                                </div>
+                                <span class="text-green-600 font-bold text-sm">+70</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: MARKETPLACE (New) -->
+            <div id="view-shop" class="view-section hidden space-y-6 fade-in">
+                <div class="bg-gradient-to-r from-yellow-500 to-amber-600 rounded-3xl p-8 text-white shadow-xl mb-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div>
+                            <h2 class="text-3xl font-bold mb-2">AgroShop Marketplace</h2>
+                            <p class="text-yellow-100 mb-0">Redeem your farming points for discounts on premium tools & seeds.</p>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-3">
+                            <i data-lucide="star" class="text-yellow-200 fill-yellow-200" size="24"></i>
+                            <div>
+                                <p class="text-xs text-yellow-100 font-bold uppercase tracking-wider">Your Balance</p>
+                                <p class="text-2xl font-bold"><span id="shop-points">120</span> Pts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                    <button class="px-5 py-2 bg-slate-900 text-white rounded-full text-sm font-bold shadow-lg">All Items</button>
+                    <button class="px-5 py-2 bg-white text-slate-600 hover:bg-slate-100 rounded-full text-sm font-bold border border-slate-200 transition-colors">Seeds</button>
+                    <button class="px-5 py-2 bg-white text-slate-600 hover:bg-slate-100 rounded-full text-sm font-bold border border-slate-200 transition-colors">Fertilizers</button>
+                    <button class="px-5 py-2 bg-white text-slate-600 hover:bg-slate-100 rounded-full text-sm font-bold border border-slate-200 transition-colors">Tools</button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="shop-grid">
+                    <!-- Products injected by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW: AI CHAT -->
+            <div id="view-ai-chat" class="view-section hidden h-[calc(100vh-8rem)] flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden fade-in">
+                <div class="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white shadow-sm">
+                            <i data-lucide="bot" size="20"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">AgroGenius</h3>
+                            <p class="text-xs text-green-600 font-bold flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Always Online
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50/30">
+                    <div class="flex justify-start">
+                        <div class="max-w-[85%] md:max-w-[70%] rounded-2xl p-4 shadow-sm bg-white text-slate-700 border border-slate-100 rounded-tl-none">
+                            <p class="text-sm leading-relaxed">Hello! I'm AgroGenius. I can help you with crop diseases, fertilizer tips, or weather advice. Try asking "How to treat leaf rust?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white border-t border-slate-100">
+                    <!-- Quick Chips -->
+                    <div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
+                        <button onclick="setChatInput('🌧️ Will it rain today?')" class="whitespace-nowrap px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-xs font-medium text-slate-600 transition-colors border border-slate-200">🌧️ Will it rain?</button>
+                        <button onclick="setChatInput('🍅 How to grow tomatoes?')" class="whitespace-nowrap px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-xs font-medium text-slate-600 transition-colors border border-slate-200">🍅 Tomato tips</button>
+                        <button onclick="setChatInput('🐛 Pest control for Rice')" class="whitespace-nowrap px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-xs font-medium text-slate-600 transition-colors border border-slate-200">🐛 Pest control</button>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Type your farming question..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none text-slate-800 placeholder:text-slate-400">
+                        <button onclick="sendMessage()" class="p-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors shadow-lg shadow-green-600/20">
+                            <i data-lucide="send" size="20"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: DISEASE SCAN -->
+            <div id="view-scan" class="view-section hidden max-w-4xl mx-auto space-y-6 fade-in">
+                <div class="text-center space-y-2 mb-8 mt-4">
+                    <h2 class="text-3xl font-bold text-slate-900">Plant Doctor & Progress Log</h2>
+                    <p class="text-slate-500">Upload photos of your farm to diagnose diseases or just log progress. <span class="text-green-600 font-bold">Earn +50 Points per scan!</span></p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center relative overflow-hidden group" id="upload-container">
+                        <div id="upload-placeholder" class="space-y-6 py-12 transition-all">
+                            <div class="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mx-auto text-purple-500 mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <i data-lucide="camera" size="40"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800 mb-2">Upload or Take Photo</h3>
+                                <label class="cursor-pointer bg-slate-900 text-white px-8 py-3.5 rounded-full font-medium hover:bg-slate-800 transition-colors inline-flex items-center gap-2 shadow-lg shadow-slate-900/20">
+                                    <i data-lucide="upload-cloud" size="18"></i> Select Image
+                                    <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+                                </label>
+                            </div>
+                        </div>
+                        <div id="image-preview" class="hidden relative h-full flex flex-col">
+                            <img id="preview-img" src="" alt="Preview" class="w-full h-64 object-cover rounded-xl shadow-md mb-6 border border-slate-100">
+                            <button onclick="startDiagnosis()" id="diagnose-btn" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20">Analyze & Earn Points</button>
+                            <button onclick="resetScan()" class="absolute top-2 right-2 p-2 bg-slate-900/50 backdrop-blur-md text-white rounded-full hover:bg-slate-900/70 transition-colors"><i data-lucide="x" size="16"></i></button>
+                        </div>
+                        <div id="scan-loading" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-10">
+                            <div class="w-16 h-16 border-4 border-slate-100 border-t-green-500 rounded-full animate-spin mb-4"></div>
+                            <p class="text-slate-600 font-medium animate-pulse">AI is analyzing leaf texture...</p>
+                        </div>
+                    </div>
+
+                    <!-- Result Card -->
+                    <div id="scan-result" class="hidden transition-all duration-500">
+                        <div class="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden">
+                            <div class="bg-red-50 p-6 border-b border-red-100 flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-red-700">Early Blight</h3>
+                                    <p class="text-red-600/80 font-medium text-sm mt-1">Confidence: 94%</p>
+                                </div>
+                                <div class="bg-white p-2 rounded-full shadow-sm">
+                                    <i data-lucide="alert-triangle" class="text-red-500 w-6 h-6"></i>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-6">
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Symptoms</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium border border-slate-200">Dark spots</span>
+                                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium border border-slate-200">Yellowing</span>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-green-50 rounded-xl border border-green-100">
+                                    <h4 class="font-bold text-green-800 mb-2 flex items-center gap-2"><i data-lucide="leaf" size="16"></i> Organic Cure</h4>
+                                    <p class="text-sm text-green-700 leading-relaxed">Spray Neem Oil (5ml/L) or a Baking soda solution twice a week.</p>
+                                </div>
+                                <button class="w-full py-3.5 border-2 border-slate-100 rounded-xl font-bold text-slate-600 hover:border-green-500 hover:text-green-600 transition-colors flex items-center justify-center gap-2 bg-slate-50 hover:bg-white">
+                                    <i data-lucide="message-circle" size="18"></i> Consult an Expert
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: CROP GUIDE -->
+            <div id="view-crop-guide" class="view-section hidden space-y-6 fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">Crop Cultivation</h2>
+                    <p class="text-slate-500">Professional guides from sowing to harvest.</p>
+                </div>
+                <!-- Grid of Crops -->
+                <div id="crop-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Rice Card -->
+                    <div onclick="showCropDetail('rice')" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                        <div class="h-48 overflow-hidden relative">
+                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1536617621972-0604420b7274?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <div class="absolute bottom-4 left-4 z-20">
+                                <h3 class="text-xl font-bold text-white">Rice (Paddy)</h3>
+                                <p class="text-white/80 text-sm">120-150 Days</p>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <p class="text-sm text-slate-500 mb-4 line-clamp-2">Complete guide covering nursery preparation, transplanting, and water management.</p>
+                            <span class="text-green-600 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Read Guide <i data-lucide="arrow-right" size="16"></i></span>
+                        </div>
+                    </div>
+                    <!-- Tomato Card -->
+                    <div onclick="showCropDetail('tomato')" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                         <div class="h-48 overflow-hidden relative">
+                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <div class="absolute bottom-4 left-4 z-20">
+                                <h3 class="text-xl font-bold text-white">Tomato</h3>
+                                <p class="text-white/80 text-sm">90 Days</p>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <p class="text-sm text-slate-500 mb-4 line-clamp-2">Learn staking, pruning, and fertigation techniques for high yield.</p>
+                            <span class="text-green-600 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Read Guide <i data-lucide="arrow-right" size="16"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail View -->
+                <div id="crop-detail" class="hidden flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row">
+                    <div class="w-full md:w-1/3 bg-slate-50 border-r border-slate-200 p-8">
+                        <button onclick="hideCropDetail()" class="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 font-medium transition-colors"><i data-lucide="arrow-left" size="18"></i> Back to Crops</button>
+                        <h2 id="detail-title" class="text-3xl font-bold text-slate-900 mb-2">Rice</h2>
+                        <div class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold mb-6">Cereal Crop</div>
+                        
+                        <div class="space-y-4">
+                             <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                 <div class="flex items-center gap-3 mb-1">
+                                     <i data-lucide="scale" class="text-slate-400" size="18"></i>
+                                     <span class="text-xs font-bold text-slate-400 uppercase">Yield</span>
+                                 </div>
+                                 <p class="text-lg font-bold text-slate-800">5 Tons / Hectare</p>
+                             </div>
+                             <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                 <div class="flex items-center gap-3 mb-1">
+                                     <i data-lucide="droplets" class="text-slate-400" size="18"></i>
+                                     <span class="text-xs font-bold text-slate-400 uppercase">Water</span>
+                                 </div>
+                                 <p class="text-lg font-bold text-slate-800">High Requirement</p>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-8 bg-white">
+                        <h3 class="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2"><i data-lucide="calendar" class="text-green-600"></i> Farming Timeline</h3>
+                        <div class="relative border-l-2 border-slate-100 ml-3 space-y-10" id="detail-stages">
+                            <!-- Stages injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: SOIL LAB -->
+            <div id="view-soil" class="view-section hidden max-w-5xl mx-auto fade-in">
+                <div class="mb-8 mt-4">
+                    <h2 class="text-2xl font-bold text-slate-900">Soil Health Lab</h2>
+                    <p class="text-slate-500">Input your NPK values for fertilizer recommendations.</p>
+                </div>
+                <div class="grid md:grid-cols-12 gap-8">
+                    <div class="md:col-span-5 bg-white p-8 rounded-3xl shadow-sm border border-slate-200 h-fit">
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Soil Type</label>
+                                <div class="relative">
+                                    <select class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-green-500/20 appearance-none font-medium text-slate-700">
+                                        <option>Loamy Soil</option><option>Clay Soil</option><option>Red Soil</option><option>Sandy Soil</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="absolute right-4 top-4 text-slate-400 pointer-events-none" size="16"></i>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Nitrogen (N)</label>
+                                    <input type="number" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-green-500/20 font-medium" value="50">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Phosphorus (P)</label>
+                                    <input type="number" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-green-500/20 font-medium" value="30">
+                                </div>
+                            </div>
+                            <button onclick="showSoilReport()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10 mt-2">Generate Report</button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-7">
+                        <div id="soil-placeholder" class="h-full border-2 border-dashed border-slate-200 rounded-3xl flex items-center justify-center text-slate-400 flex-col gap-4 p-12 min-h-[400px]">
+                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                                <i data-lucide="beaker" size="32" class="opacity-50"></i>
+                            </div>
+                            <p class="font-medium">Enter parameters to see analysis</p>
+                        </div>
+                        <div id="soil-report" class="hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-slate-900 mb-6">Analysis Results</h3>
+                            <div class="space-y-8 mb-8">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-2"><span class="font-bold text-slate-700">Nitrogen</span><span class="text-red-500 font-bold">Low</span></div>
+                                    <div class="h-4 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-red-400 w-[40%] rounded-full"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-2"><span class="font-bold text-slate-700">Phosphorus</span><span class="text-green-500 font-bold">Optimal</span></div>
+                                    <div class="h-4 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-green-500 w-[70%] rounded-full"></div></div>
+                                </div>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-100 rounded-2xl p-5">
+                                <h4 class="font-bold text-amber-900 mb-2 flex items-center gap-2"><i data-lucide="lightbulb" size="18"></i> Correction Tips</h4>
+                                <ul class="list-disc list-inside text-sm text-amber-800 space-y-1 font-medium">
+                                    <li>Add Urea or composted manure to boost Nitrogen.</li>
+                                    <li>Maintain current Phosphorus levels.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: WEATHER -->
+            <div id="view-weather" class="view-section hidden max-w-5xl mx-auto fade-in">
+                 <div class="bg-blue-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-900/20 mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-12 opacity-10">
+                        <i data-lucide="cloud" size="120"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+                        <div>
+                            <div class="flex items-center gap-2 mb-4 text-blue-100 bg-blue-500/30 px-3 py-1 rounded-full w-fit text-sm font-medium backdrop-blur-sm">
+                                <i data-lucide="map-pin" size="14"></i> <span id="weather-tab-location">Locating...</span>
+                            </div>
+                            <div class="text-8xl font-bold mb-2 tracking-tighter" id="tab-weather-temp">--°</div>
+                            <div class="text-2xl font-medium text-blue-100" id="tab-weather-condition">Loading...</div>
+                            <div class="mt-6">
+                                <a id="google-weather-btn" href="#" target="_blank" class="hidden inline-flex items-center gap-2 px-5 py-2.5 bg-white text-blue-600 font-bold rounded-full hover:bg-blue-50 transition-colors shadow-lg shadow-black/10 text-sm">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.0003 11.25H21.7503C21.8628 11.875 21.9378 12.55 21.9378 13.3C21.9378 19.325 17.9003 23.6 12.0003 23.6C5.58778 23.6 0.375305 18.4 0.375305 12C0.375305 5.6 5.58778 0.400024 12.0003 0.400024C15.1378 0.400024 17.7753 1.55002 19.8003 3.42502L16.4253 6.67502C15.6378 5.92502 14.1503 5.00002 12.0003 5.00002C8.21281 5.00002 5.05031 8.20002 5.05031 12C5.05031 15.8 8.21281 19 12.0003 19C16.4253 19 18.0628 15.9375 18.3628 13.8625H12.0003V11.25Z"/></svg>
+                                    Open in Google Weather
+                                </a>
+                            </div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl w-full md:w-80 border border-white/20">
+                            <h3 class="font-bold border-b border-white/20 pb-3 mb-4 text-sm uppercase tracking-wider opacity-80">Farm Advisory</h3>
+                            <ul class="space-y-4 text-sm font-medium" id="farm-advisory-list">
+                                <li class="flex items-center gap-3 opacity-70">Fetching local data...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-slate-900 text-xl">7-Day Forecast</h3>
+                </div>
+                
+                <div id="forecast-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    <!-- Forecast items injected here -->
+                    <div class="col-span-full p-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-100 border-dashed">
+                        Loading forecast data...
+                    </div>
+                </div>
+            </div>
+
+             <!-- VIEW: RECOMMENDATION -->
+             <div id="view-recommend" class="view-section hidden max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 fade-in mt-4">
+                <div class="text-center mb-10">
+                    <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-blue-600 mb-6 shadow-sm">
+                        <i data-lucide="trending-up" size="40"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Smart Crop Picker</h2>
+                    <p class="text-slate-500">AI-driven profit analysis based on current market trends.</p>
+                </div>
+                
+                <div id="rec-form" class="space-y-6 max-w-md mx-auto">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Select Season</label>
+                        <div class="relative">
+                            <select class="w-full p-4 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-medium text-slate-700">
+                                <option>Kharif (Monsoon)</option>
+                                <option>Rabi (Winter)</option>
+                                <option>Zaid (Summer)</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-4 top-4 text-slate-400 pointer-events-none" size="20"></i>
+                        </div>
+                    </div>
+                    <button onclick="calculateRec()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 text-lg">Analyze & Recommend</button>
+                </div>
+                
+                <div id="rec-loading" class="hidden py-12 text-center">
+                    <div class="w-16 h-16 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+                    <p class="text-slate-600 font-medium animate-pulse">Analyzing soil & market data...</p>
+                </div>
+                
+                <div id="rec-result" class="hidden space-y-4 mt-8">
+                    <div class="flex justify-between items-center p-6 border border-slate-100 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-md transition-all cursor-pointer group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-xl">M</div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-lg">Maize (Corn)</h4>
+                                <p class="text-sm text-green-600 font-medium flex items-center gap-1"><i data-lucide="shield-check" size="14"></i> Low Risk</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-slate-900">$1,200</div>
+                            <div class="text-xs text-slate-400 font-medium uppercase">Est. Profit/Acre</div>
+                        </div>
+                    </div>
+                     <div class="flex justify-between items-center p-6 border border-slate-100 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-md transition-all cursor-pointer group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold text-xl">S</div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-lg">Soybean</h4>
+                                <p class="text-sm text-amber-600 font-medium flex items-center gap-1"><i data-lucide="alert-circle" size="14"></i> Med Risk</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-slate-900">$950</div>
+                            <div class="text-xs text-slate-400 font-medium uppercase">Est. Profit/Acre</div>
+                        </div>
+                    </div>
+                    <button onclick="resetRec()" class="w-full py-4 text-slate-500 font-medium hover:text-slate-900 transition-colors mt-4">Start New Analysis</button>
+                </div>
+             </div>
+
+        </main>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- State Variables ---
+        let userPoints = 120; // Default points
+        let userLevel = 1;
+        const pointsPerLevel = 200;
+
+        // --- Onboarding Logic ---
+        function selectExperience(level) {
+            const overlay = document.getElementById('onboarding-overlay');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => overlay.remove(), 500); 
+
+            if (level === 'beginner') {
+                // Beginners go to Crop Guide (Listing Platform)
+                switchTab('crop-guide');
+            } else {
+                // Others go to Dashboard
+                switchTab('dashboard');
+            }
+            
+            // Start fetching real data
+            initRealTime();
+            renderMarketplace();
+            renderRewards(); // Init Rewards UI
+        }
+
+        // --- Reward System Logic ---
+        function updatePointsUI() {
+            const els = [document.getElementById('user-points'), document.getElementById('banner-points'), document.getElementById('shop-points'), document.getElementById('lb-points'), document.getElementById('points-progress-text')];
+            els.forEach(el => {
+                if(el) {
+                    el.innerText = userPoints;
+                    el.classList.add('animate-pop');
+                    setTimeout(() => el.classList.remove('animate-pop'), 300);
+                }
+            });
+            updateTreeProgress();
+        }
+
+        function showRewardToast(msg) {
+            const toast = document.getElementById('reward-toast');
+            if(msg) toast.querySelector('h4').innerText = msg;
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        function toggleRewardTab(tabName) {
+            const lbContent = document.getElementById('tab-content-leaderboard');
+            const histContent = document.getElementById('tab-content-history');
+            const lbBtn = document.getElementById('tab-btn-leaderboard');
+            const histBtn = document.getElementById('tab-btn-history');
+
+            if(tabName === 'leaderboard') {
+                lbContent.classList.remove('hidden');
+                histContent.classList.add('hidden');
+                lbBtn.className = "text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-2";
+                histBtn.className = "text-sm font-bold text-slate-400 hover:text-slate-600 pb-2";
+            } else {
+                lbContent.classList.add('hidden');
+                histContent.classList.remove('hidden');
+                histBtn.className = "text-sm font-bold text-slate-900 border-b-2 border-slate-900 pb-2";
+                lbBtn.className = "text-sm font-bold text-slate-400 hover:text-slate-600 pb-2";
+            }
+        }
+
+        function updateTreeProgress() {
+            const progress = (userPoints % pointsPerLevel) / pointsPerLevel * 100;
+            const bar = document.getElementById('points-progress-bar');
+            if(bar) bar.style.width = `${progress}%`;
+
+            // Check Level Up
+            const newLevel = Math.floor(userPoints / pointsPerLevel) + 1;
+            if(newLevel > userLevel) {
+                userLevel = newLevel;
+                document.getElementById('level-display').innerText = userLevel;
+                document.getElementById('tree-level-display').innerText = userLevel;
+                document.getElementById('sidebar-level').innerText = userLevel;
+                
+                // Visual Tree Upgrade
+                const treeIcon = document.getElementById('tree-icon');
+                if(userLevel >= 2) {
+                    treeIcon.setAttribute('data-lucide', 'tree-deciduous'); 
+                    lucide.createIcons();
+                }
+                
+                // Bonus
+                alert(`🎉 Level Up! You reached Level ${userLevel}. Bonus +50 Points!`);
+                userPoints += 50;
+                updatePointsUI();
+            }
+        }
+
+        function renderRewards() {
+            // Initial render call to set up progress bar
+            updateTreeProgress();
+        }
+
+        // --- Real-time Logic ---
+        async function initRealTime() {
+            // UI State: Loading
+            const weatherContent = document.getElementById('weather-content');
+            const weatherSkeleton = document.getElementById('weather-skeleton');
+            
+            if (weatherContent && weatherSkeleton) {
+                weatherContent.classList.add('hidden');
+                weatherSkeleton.classList.remove('hidden');
+            }
+            
+            const locText = document.getElementById('header-location-text');
+            if(locText) locText.innerText = "Locating...";
+
+            updateTimeGreeting();
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    // -- Set Google Weather Link --
+                    const googleUrl = `https://www.google.com/search?q=weather+at+${lat},${lon}`;
+                    const linkBtn = document.getElementById('google-weather-btn');
+                    if(linkBtn) {
+                        linkBtn.href = googleUrl;
+                        linkBtn.classList.remove('hidden');
+                    }
+
+                    try {
+                        // 1. Get Location Name
+                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                        if(!geoRes.ok) throw new Error('Geo failed');
+                        const geoData = await geoRes.json();
+                        const city = geoData.address.city || geoData.address.town || geoData.address.village || "Local Farm";
+                        const region = geoData.address.state || "";
+                        updateLocationText(`${city}, ${region}`);
+
+                        // 2. Get Weather
+                        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`;
+                        const weatherRes = await fetch(url);
+                        if(!weatherRes.ok) throw new Error('Weather failed');
+                        const weatherData = await weatherRes.json();
+                        
+                        updateWeatherUI(weatherData.current);
+                        updateAlertsUI(weatherData.current);
+                        updateForecastUI(weatherData.daily);
+                        
+                        // UI State: Success
+                        if (weatherSkeleton) weatherSkeleton.classList.add('hidden');
+                        if (weatherContent) weatherContent.classList.remove('hidden');
+                        
+                    } catch (e) {
+                        console.error("API Error", e);
+                        useFallbackData(); // Graceful Degradation
+                    }
+
+                }, (error) => {
+                    console.warn("Loc permission denied/error");
+                    useFallbackData();
+                });
+            } else {
+                useFallbackData();
+            }
+        }
+
+        // Fallback if API fails or permission denied
+        function useFallbackData() {
+            updateLocationText("Demo Farm (Preview)");
+            const mockCurrent = { temperature_2m: 28, relative_humidity_2m: 65, wind_speed_10m: 12, weather_code: 1 };
+            const mockDaily = {
+                time: Array.from({length: 7}, (_, i) => new Date(Date.now() + i*86400000).toISOString()),
+                temperature_2m_max: [30, 31, 29, 28, 30, 32, 31],
+                temperature_2m_min: [22, 23, 21, 20, 22, 23, 22],
+                weather_code: [1, 2, 53, 61, 1, 0, 2],
+                precipitation_probability_max: [10, 20, 60, 80, 10, 0, 5]
+            };
+            
+            updateWeatherUI(mockCurrent);
+            updateAlertsUI(mockCurrent);
+            updateForecastUI(mockDaily);
+            
+            const weatherContent = document.getElementById('weather-content');
+            const weatherSkeleton = document.getElementById('weather-skeleton');
+            if (weatherSkeleton) weatherSkeleton.classList.add('hidden');
+            if (weatherContent) weatherContent.classList.remove('hidden');
+        }
+
+        function updateLocationText(text) {
+            const el1 = document.getElementById('header-location-text');
+            const el2 = document.getElementById('weather-tab-location');
+            if(el1) el1.innerText = text;
+            if(el2) el2.innerText = text;
+        }
+
+        function updateTimeGreeting() {
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+            const el = document.getElementById('dashboard-greeting');
+            if(el) el.innerText = `${greeting}, Farmer! 🌾`;
+        }
+
+        function updateWeatherUI(data) {
+            const temp = Math.round(data.temperature_2m);
+            const humidity = data.relative_humidity_2m;
+            const wind = data.wind_speed_10m;
+            const code = data.weather_code;
+            
+            const conditions = {
+                0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+                45: 'Foggy', 48: 'Fog', 51: 'Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
+                61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 71: 'Snow', 95: 'Thunderstorm'
+            };
+            const conditionText = conditions[code] || 'Cloudy';
+
+            // Dashboard
+            const dashTemp = document.getElementById('dash-temp');
+            if(dashTemp) dashTemp.innerText = `${temp}°C`;
+            const dashHum = document.getElementById('dash-humidity');
+            if(dashHum) dashHum.innerText = `${humidity}%`;
+            const dashWind = document.getElementById('dash-wind');
+            if(dashWind) dashWind.innerHTML = `${wind} <span class="text-xs text-slate-400">km/h</span>`;
+            
+            // Weather Tab
+            const tabTemp = document.getElementById('tab-weather-temp');
+            if(tabTemp) tabTemp.innerText = `${temp}°`;
+            const tabCond = document.getElementById('tab-weather-condition');
+            if(tabCond) tabCond.innerText = conditionText;
+
+            // Advisory Logic
+            const advisoryList = document.getElementById('farm-advisory-list');
+            if(advisoryList) {
+                let advisoryHTML = '';
+                if(code >= 51 && code <= 67) { 
+                    advisoryHTML += `<li class="flex items-center gap-3 text-amber-200"><i data-lucide="cloud-rain" size="18"></i> Avoid pesticide spraying today.</li>`;
+                    advisoryHTML += `<li class="flex items-center gap-3 text-white"><i data-lucide="check-circle" size="18"></i> Ensure drainage channels are open.</li>`;
+                } else if (code <= 2) { 
+                    advisoryHTML += `<li class="flex items-center gap-3 text-green-200"><i data-lucide="sun" size="18"></i> Good day for harvesting.</li>`;
+                    advisoryHTML += `<li class="flex items-center gap-3 text-white"><i data-lucide="droplets" size="18"></i> Irrigate crops in the evening.</li>`;
+                } else {
+                    advisoryHTML += `<li class="flex items-center gap-3 text-white"><i data-lucide="activity" size="18"></i> Routine maintenance recommended.</li>`;
+                }
+                advisoryList.innerHTML = advisoryHTML;
+                lucide.createIcons();
+            }
+        }
+
+        function updateAlertsUI(current) {
+            const container = document.getElementById('dashboard-alerts-list');
+            if(!container) return;
+            
+            let alertsHTML = '';
+            let count = 0;
+
+            const addAlert = (icon, color, text, subtext) => {
+                count++;
+                return `
+                <div class="p-3 bg-${color}-50 border border-${color}-100 rounded-xl flex gap-3 items-start hover:bg-${color}-100 transition-colors">
+                    <i data-lucide="${icon}" class="text-${color}-600 shrink-0 mt-0.5" size="18"></i>
+                    <div>
+                        <p class="text-sm text-${color}-900 font-bold leading-tight">${text}</p>
+                        <p class="text-xs text-${color}-600 mt-0.5 font-medium">${subtext}</p>
+                    </div>
+                </div>`;
+            };
+
+            if (current.weather_code >= 51) alertsHTML += addAlert('cloud-rain', 'red', 'Rain Alert', 'Stop irrigation immediately.');
+            if (current.wind_speed_10m > 15) alertsHTML += addAlert('wind', 'amber', 'High Winds', 'Secure tall crops.');
+            if (current.relative_humidity_2m > 85) alertsHTML += addAlert('alert-triangle', 'red', 'Fungal Risk', 'Humidity > 85%. Check for blight.');
+            if (current.temperature_2m > 35) alertsHTML += addAlert('sun', 'orange', 'Heat Stress', 'Increase water supply.');
+            
+            // Market Alert (Static)
+            alertsHTML += addAlert('trending-up', 'green', 'Market Update', 'Potato prices up 12%.');
+
+            container.innerHTML = alertsHTML;
+            lucide.createIcons();
+        }
+
+        function updateForecastUI(daily) {
+            const container = document.getElementById('forecast-grid');
+            if(!container) return;
+
+            let html = '';
+            
+            for(let i=0; i<7; i++) {
+                const date = new Date(daily.time[i]);
+                const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' });
+                const maxT = Math.round(daily.temperature_2m_max[i]);
+                const minT = Math.round(daily.temperature_2m_min[i]);
+                const code = daily.weather_code[i];
+
+                let iconName = 'cloud';
+                let colorClass = 'text-slate-400';
+                
+                if(code <= 1) { iconName = 'sun'; colorClass = 'text-amber-500'; }
+                else if(code >= 51) { iconName = 'cloud-rain'; colorClass = 'text-blue-500'; }
+
+                html += `
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm hover:shadow-md transition-all">
+                    <p class="text-slate-400 text-[10px] uppercase font-bold mb-2 tracking-wider">${dayName}</p>
+                    <div class="h-8 flex items-center justify-center mb-2">
+                        <i data-lucide="${iconName}" class="${colorClass}" size="24"></i>
+                    </div>
+                    <div class="flex justify-center gap-1 text-sm font-bold text-slate-800">
+                        <span>${maxT}°</span><span class="text-slate-300">/</span><span class="text-slate-400">${minT}°</span>
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- Marketplace Logic ---
+        const products = [
+            { id: 1, name: "Hybrid Tomato Seeds", price: 40, category: "Seeds", image: "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d9?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 2, name: "Organic NPK Fertilizer", price: 250, category: "Fertilizer", image: "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 3, name: "Steel Hand Trowel", price: 150, category: "Tools", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 4, name: "Neem Oil Spray", price: 180, category: "Fertilizer", image: "https://images.unsplash.com/photo-1599421490111-ad70bebb536f?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 5, name: "Ceramic Pot (Large)", price: 200, category: "Pots", image: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 6, name: "Spinach Seeds", price: 30, category: "Seeds", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 7, name: "Watering Can", price: 350, category: "Tools", image: "https://images.unsplash.com/photo-1599687351724-dfa3c4ff81b1?auto=format&fit=crop&q=80&w=200&h=200" },
+            { id: 8, name: "Grow Bags (Set of 5)", price: 400, category: "Pots", image: "https://images.unsplash.com/photo-1616788494707-ec28f08d05a1?auto=format&fit=crop&q=80&w=200&h=200" },
+        ];
+
+        function renderMarketplace() {
+            const grid = document.getElementById('shop-grid');
+            if(!grid) return;
+            
+            grid.innerHTML = products.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group hover:shadow-lg transition-all">
+                    <div class="h-40 overflow-hidden bg-slate-100 relative">
+                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-slate-600 shadow-sm">${p.category}</span>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-slate-900 mb-1 truncate">${p.name}</h4>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-lg font-bold text-green-700">₹${p.price}</span>
+                            <span class="text-xs text-slate-400 line-through decoration-red-400 decoration-2" id="old-price-${p.id}"></span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="peer sr-only" onchange="toggleDiscount(this, ${p.id}, ${p.price})">
+                                <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-400"></div>
+                                <span class="ms-2 text-xs font-medium text-slate-500">Use Points</span>
+                            </label>
+                            <button onclick="buyProduct('${p.name}')" class="bg-slate-900 text-white p-2 rounded-lg hover:bg-slate-800 transition-colors">
+                                <i data-lucide="shopping-cart" size="18"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function toggleDiscount(checkbox, id, price) {
+            const oldPriceEl = document.getElementById(`old-price-${id}`);
+            const cardPrice = checkbox.closest('.p-5').querySelector('.text-green-700');
+            
+            if(checkbox.checked) {
+                if(userPoints >= 50) {
+                    oldPriceEl.innerText = `₹${price}`;
+                    const discount = Math.round(price * 0.8); // 20% off
+                    cardPrice.innerText = `₹${discount}`;
+                    // Don't deduct points yet, just visual
+                } else {
+                    checkbox.checked = false;
+                    alert("Not enough AgroPoints! Scan your farm to earn more.");
+                }
+            } else {
+                oldPriceEl.innerText = '';
+                cardPrice.innerText = `₹${price}`;
+            }
+        }
+
+        function buyProduct(name) {
+            alert(`Added ${name} to cart!`);
+        }
+
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('fade-in'));
+            
+            const selectedView = document.getElementById('view-' + tabId);
+            if(selectedView) {
+                selectedView.classList.remove('hidden');
+                void selectedView.offsetWidth; 
+                selectedView.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if(el.dataset.tab === tabId) {
+                    el.className = 'nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-semibold bg-green-50 text-green-700 ring-1 ring-green-600/10 shadow-sm';
+                } else {
+                    el.className = 'nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900';
+                }
+            });
+
+            const titles = {
+                'dashboard': 'Dashboard', 'ai-chat': 'AI Assistant', 'scan': 'Disease Detection', 'shop': 'AgroShop',
+                'crop-guide': 'Crop Guide', 'soil': 'Soil Lab', 'weather': 'Weather', 'recommend': 'Smart Pick', 'rewards': 'Rewards Zone'
+            };
+            const titleEl = document.getElementById('header-title');
+            if(titleEl) titleEl.innerText = titles[tabId];
+
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            if(mobileOverlay) mobileOverlay.classList.add('hidden');
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if(!sidebar || !overlay) return;
+
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // --- AI Chat Logic ---
+        function setChatInput(text) {
+            const input = document.getElementById('chat-input');
+            if(input) {
+                input.value = text;
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            if(!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            const container = document.getElementById('chat-messages');
+            
+            const userHTML = `
+                <div class="flex justify-end fade-in">
+                    <div class="max-w-[85%] md:max-w-[70%] rounded-2xl p-4 shadow-sm bg-green-600 text-white rounded-tr-none">
+                        <p class="text-sm leading-relaxed">${text}</p>
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', userHTML);
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // Simulating AI typing delay
+            setTimeout(() => {
+                let reply = "Based on agricultural best practices, ensure you monitor soil moisture regularly.";
+                if(text.toLowerCase().includes('rain')) reply = "Current forecasts show a high chance of rain. I recommend pausing any scheduled irrigation for 24 hours.";
+                if(text.toLowerCase().includes('tomato')) reply = "Tomatoes need consistent watering to prevent blossom end rot. Support them with stakes as they grow.";
+                if(text.toLowerCase().includes('pest')) reply = "For pests, first identify if it's an insect or fungus. Try our 'Disease Scan' feature for an instant diagnosis!";
+
+                const botHTML = `
+                <div class="flex justify-start fade-in">
+                    <div class="max-w-[85%] md:max-w-[70%] rounded-2xl p-4 shadow-sm bg-white text-slate-700 border border-slate-100 rounded-tl-none">
+                        <p class="text-sm leading-relaxed">${reply}</p>
+                    </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', botHTML);
+                container.scrollTop = container.scrollHeight;
+            }, 800);
+        }
+        
+        const chatInput = document.getElementById('chat-input');
+        if(chatInput) {
+            chatInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+
+        // --- Disease Scan Logic ---
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                    document.getElementById('image-preview').classList.remove('hidden');
+                    document.getElementById('scan-result').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function startDiagnosis() {
+            const btn = document.getElementById('diagnose-btn');
+            const loading = document.getElementById('scan-loading');
+            
+            if(btn) btn.disabled = true;
+            if(loading) loading.classList.remove('hidden');
+
+            setTimeout(() => {
+                if(loading) loading.classList.add('hidden');
+                const res = document.getElementById('scan-result');
+                if(res) res.classList.remove('hidden');
+                if(btn) btn.disabled = false;
+                
+                // GAMIFICATION: Add Points!
+                userPoints += 50;
+                updatePointsUI();
+                showRewardToast("+50 AgroPoints!");
+                
+                lucide.createIcons();
+            }, 2000);
+        }
+
+        function resetScan() {
+            const prev = document.getElementById('image-preview');
+            const place = document.getElementById('upload-placeholder');
+            const res = document.getElementById('scan-result');
+            
+            if(prev) prev.classList.add('hidden');
+            if(place) place.classList.remove('hidden');
+            if(res) res.classList.add('hidden');
+            
+            const fileInput = document.querySelector('input[type="file"]');
+            if(fileInput) fileInput.value = '';
+        }
+
+        // --- Crop Guide Logic ---
+        const cropData = {
+            rice: { 
+                title: 'Rice (Paddy)', 
+                stages: [
+                    { t: 'Nursery Prep', d: 'Prepare a wet bed nursery. Soak seeds for 24h before sowing.' },
+                    { t: 'Transplanting', d: 'Transplant 21-25 day old seedlings. Maintain 2cm water level.' },
+                    { t: 'Nutrient Mgmt', d: 'Apply Nitrogen in splits. Monitor for stem borer.' },
+                    { t: 'Harvesting', d: 'Harvest when 80% grains are golden. Dry to 14% moisture.' }
+                ]
+            },
+            tomato: {
+                title: 'Tomato',
+                stages: [
+                    { t: 'Sowing', d: 'Sow in pro-trays with cocopeat. Germination takes 6-8 days.' },
+                    { t: 'Transplanting', d: 'Transplant 25-day old seedlings in raised beds.' },
+                    { t: 'Staking', d: 'Provide support using stakes or trellis to keep fruits off ground.' },
+                    { t: 'Harvest', d: 'Pick fruits at the breaker stage for distant markets.' }
+                ]
+            }
+        };
+
+        function showCropDetail(cropId) {
+            const crop = cropData[cropId];
+            document.getElementById('crop-list').classList.add('hidden');
+            document.getElementById('crop-detail').classList.remove('hidden');
+            document.getElementById('detail-title').innerText = crop.title;
+            
+            const stagesContainer = document.getElementById('detail-stages');
+            stagesContainer.innerHTML = crop.stages.map((s, i) => `
+                <div class="relative pl-8 fade-in" style="animation-delay: ${i*100}ms">
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-green-500 border-4 border-slate-50 shadow-sm z-10"></div>
+                    <div class="group">
+                        <h4 class="text-lg font-bold text-slate-900 mb-1 group-hover:text-green-600 transition-colors">Stage ${i+1}: ${s.t}</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">${s.d}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function hideCropDetail() {
+            document.getElementById('crop-detail').classList.add('hidden');
+            document.getElementById('crop-list').classList.remove('hidden');
+        }
+
+        // --- Soil Lab Logic ---
+        function showSoilReport() {
+            document.getElementById('soil-placeholder').classList.add('hidden');
+            document.getElementById('soil-report').classList.remove('hidden');
+        }
+
+        // --- Recommendation Logic ---
+        function calculateRec() {
+            document.getElementById('rec-form').classList.add('hidden');
+            document.getElementById('rec-loading').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('rec-loading').classList.add('hidden');
+                document.getElementById('rec-result').classList.remove('hidden');
+            }, 1500);
+        }
+
+        function resetRec() {
+            document.getElementById('rec-result').classList.add('hidden');
+            document.getElementById('rec-form').classList.remove('hidden');
+        }
+
+        // NOTE: initRealTime is NOT called automatically here.
+        // It is triggered by the onboarding selection.
+
+    </script>
+</body>
+</html>
